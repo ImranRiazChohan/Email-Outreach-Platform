@@ -212,26 +212,6 @@ class Lead(Base):
         }
 
 
-class Country(Base):
-    __tablename__ = "countries"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, index=True)
-
-    cities: Mapped[list["City"]] = relationship(back_populates="country", cascade="all, delete-orphan")
-
-
-class City(Base):
-    __tablename__ = "cities"
-    __table_args__ = (UniqueConstraint("country_id", "name", name="uq_cities_country_id_name"),)
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    country_id: Mapped[int] = mapped_column(ForeignKey("countries.id", ondelete="CASCADE"), nullable=False, index=True)
-    name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
-
-    country: Mapped["Country"] = relationship(back_populates="cities")
-
-
 class SearchHistory(Base):
     __tablename__ = "search_history"
 
