@@ -3,7 +3,8 @@ from __future__ import annotations
 
 import streamlit as st
 
-from database.connection import init_db
+from database.connection import get_session, init_db
+from database.crud import list_all_countries, list_cities_for_country
 from services.lead_generation_service import run_lead_generation
 from utils.ui import inject_theme, stat_card, step_row
 from utils.validators import validate_lead_generation_inputs
@@ -30,12 +31,25 @@ STEP_LABELS = {
     "save": "Saving leads",
 }
 
+with get_session() as _session:
+    ALL_COUNTRIES = list_all_countries(_session)
+
 with st.container(border=True):
+    col1, col2 = st.columns(2)
+    country = col1.selectbox("Country", options=ALL_COUNTRIES, index=None, placeholder="Select a country")
+
+    with get_session() as _session:
+        cities_for_country = list_cities_for_country(_session, country) if country else []
+    city = col2.selectbox(
+        "City",
+        options=cities_for_country,
+        index=None,
+        placeholder="Select a country first" if not country else "Select a city",
+        disabled=not country,
+    )
+
     with st.form("generate_leads_form"):
         keyword = st.text_input("Business Keyword", placeholder="e.g. Schools")
-        col1, col2 = st.columns(2)
-        country = col1.text_input("Country", placeholder="e.g. Pakistan")
-        city = col2.text_input("City", placeholder="e.g. Karachi")
         required_leads = st.number_input(
             "Number of Leads Required", min_value=1, max_value=5000, value=50, step=10
         )

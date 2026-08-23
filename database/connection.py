@@ -61,6 +61,10 @@ def init_db() -> None:
     Base.metadata.create_all(bind=engine)
     _sync_schema()
 
+    from database.seed_geo import seed_countries_and_cities
+
+    seed_countries_and_cities()
+
 
 @contextmanager
 def get_session() -> Iterator[Session]:

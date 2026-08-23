@@ -11,7 +11,7 @@ from typing import Any, Optional
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from database.models import CrawlResult, CrawlStatus, Lead, SearchHistory, SearchStatus, ServiceType
+from database.models import City, Country, CrawlResult, CrawlStatus, Lead, SearchHistory, SearchStatus, ServiceType
 
 
 # ---------------------------------------------------------------------------
@@ -123,6 +123,26 @@ def distinct_cities(session: Session, country: str | None = None) -> list[str]:
         stmt = stmt.where(Lead.country == country)
     rows = session.scalars(stmt).all()
     return sorted(r for r in rows if r)
+
+
+# ---------------------------------------------------------------------------
+# Countries / cities reference data
+# ---------------------------------------------------------------------------
+
+def list_all_countries(session: Session) -> list[str]:
+    rows = session.scalars(select(Country.name).order_by(Country.name)).all()
+    return list(rows)
+
+
+def list_cities_for_country(session: Session, country_name: str) -> list[str]:
+    stmt = (
+        select(City.name)
+        .join(Country, City.country_id == Country.id)
+        .where(Country.name == country_name)
+        .order_by(City.name)
+    )
+    rows = session.scalars(stmt).all()
+    return list(rows)
 
 
 # ---------------------------------------------------------------------------
